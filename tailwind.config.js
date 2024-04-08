@@ -5,7 +5,12 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+
+    backgroundPosition: {
+      "left-search": " 12px center",
+    }, 
+
+    extend: {}
   },
   plugins: [],
 }
