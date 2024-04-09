@@ -9,8 +9,11 @@ export default {
     backgroundPosition: {
       "left-search": " 12px center",
     }, 
+    
 
     extend: {}
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/forms'),
+  ],
 }
