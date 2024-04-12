@@ -1,6 +1,41 @@
   import { MoreHorizontal , ChevronsLeft, ChevronsRight, ChevronLeft, ChevronRight} from "lucide-react"
+  import { IconButton } from "./icon-button"
+  import { Table } from "./table/table"
+  import { TableHeader } from "./table/table-header"
+  import { Searchinput } from "./search-input"
+  import { TableCell } from "./table/table-cell"
+  import { TableRow } from "./table/table-row"
+  import { atteends } from "../data/attendees"
+  import dayjs from "dayjs"
+  import "dayjs/locale/pt-br"
+  import relativeTime from "dayjs/plugin/relativeTime"
+import { MouseEventHandler, useState } from "react"
+
+
+  dayjs.extend(relativeTime);
+  dayjs.locale("pt-br")
 
   export function AttendeeList() {
+
+      //UseState - Seta um valor default que só poderá ser alterado utilizando o método desestruturado do arrayRetornado do useState()
+      const [page, setPage] = useState(1);
+      const totalPages = Math.ceil(atteends.length /10);
+
+      const goToNextPage =  ()=> {
+          setPage(page + 1)
+      }
+
+      const goToPreviousPage =  ()=> {
+          setPage(page - 1)
+      }
+
+       const goToLastPage =  ()=> {
+          setPage(totalPages)
+      }
+
+       const goToFirstPage =  ()=> {
+          setPage(1)
+      }
     return (
       <>
         <div className="flex flex-col gap-4">
@@ -8,76 +43,77 @@
           {/* Header Table */}
           <div className="flex gap-5 items-center">
             <h1 className="text-2xl font-bold">Participantes</h1>
-            <input type="text" placeholder="Buscar participante..." className=" w-[280px] bg-transparent border-[1px] border-zinc-800 pl-10 py-1.5 rounded-lg bg-[url('./assets/search.svg')] bg-left-search bg bg-no-repeat " />
+            <Searchinput  type="text" placeholder="Buscar participante..."/>
+
           </div>
           {/* Fim Header Table */}
 
 
           {/* Table */}
-          <div className="border border-white/10 rounded-lg">
-            <table className="w-full">
+              <Table>
               <thead>
-                <tr className="border-b border-white/10">
-                  <th className="py-3 px-4 text-sm text-semibold text-left"> <input type="checkbox" className="size-4 bg-black/20 rounded border-white/10"/></th>
-                  <th className="py-3 px-4 text-sm text-semibold text-left">Código</th>
-                  <th className="py-3 px-4 text-sm text-semibold text-left">Participante</th>
-                  <th className="py-3 px-4 text-sm text-semibold text-left">Data de Inscrição</th>
-                  <th className="py-3 px-4 text-sm text-semibold text-left">Data do Check-in</th>
-                  <th className="py-3 px-4 text-sm text-semibold text-left"></th>
-                </tr>
+                <TableRow>
+                  <TableHeader style={{width: 48}}><input type="checkbox" className="size-4 bg-black/20 rounded border-white/10"/></TableHeader>
+                  <TableHeader>Código</TableHeader>
+                  <TableHeader>Participante</TableHeader>
+                  <TableHeader>Data de Inscrição</TableHeader>
+                  <TableHeader>Data do Check-in</TableHeader>
+                  <TableHeader style={{ width: 64}}></TableHeader>
+                </TableRow>
               </thead>
 
               <tbody>
                 {/* Exibindo itens repetidos sem precisar copiar várias vezes */}
 
-                {Array.from({ length: 5 }).map((_, index) => {
+                {atteends.slice((page - 1) * 10, page * 10).map((atteend) => {
                   return (
-                    <tr key={index} className="border-b border-white/10 hover:bg-white/5">
-                      <td style={{width: 48}} className="py-3 px-4 text-sm text-zinc-300"> 
+                    <TableRow key={atteend.id} className="hover:bg-white/5">
+                      <TableCell style={{width: 48}}> 
                           <input type="checkbox" className="size-4 bg-black/20 rounded border-white/10"/>
-                      </td>
-                      <td className="py-3 px-4 text-sm text-zinc-300"> 192945</td>
-                      <td className="py-3 px-4 text-sm text-zinc-300">
+                      </TableCell>
+                      <TableCell> {atteend.id}</TableCell>
+                      <TableCell>
                         <div className="flex flex-col gap-1">
-                          <span className="font-semibold text-white">Enzo Rodrigues</span>
-                          <span>enzo.orodrigues03@gmail.com</span>
+                          <span className="font-semibold text-white">{atteend.nome}</span>
+                          <span>{atteend.email}</span>
                         </div>
-                        </td>
-                      <td className="py-3 px-4 text-sm text-zinc-300"> 7 dias atrás </td>
-                      <td className="py-3 px-4 text-sm text-zinc-300"> 7 dias atrás </td>
-                      <td style={{width: 64}} className="py-3 px-4 text-sm text-zinc-300">
-                        <button className="border border-white/10 rounded-md w-7 h-7 bg-black/20 flex items-center justify-center"> <MoreHorizontal className="w-4 h-4 text-white "/> </button>
-                      </td>
-                    </tr>
+                        </TableCell>
+                      <TableCell>{dayjs().to(atteend.createdAt)}</TableCell>
+                      <TableCell>{dayjs().to(atteend.createdAt)}</TableCell>
+                      <TableCell style={{width: 64}}>
+
+                        <IconButton transparent> <MoreHorizontal className="w-4 h-4 text-white "/> </IconButton>
+                      </TableCell>
+                    </TableRow>
                   )
                 })}
               </tbody>
 
               <tfoot>
-                <tr>
-                  <td className="py-3 px-4 text-sm text-zinc-300" colSpan={3}>Mostrando 10 de 228 itens</td>
-                  <td className="py-3 px-4 text-sm text-zinc-300 text-right" colSpan={3}>
-                  
-                  <div className="inline-flex gap-8 items-center">
-                      <span>Página 1 de 23</span>
+                <TableRow className="border-none">
+                  <TableCell colSpan={3}>Mostrando 10 de {atteends.length} itens</TableCell>
 
-                      <div className="flex gap-2">
-                          <button className="border border-white/10 rounded-md w-7 h-7 bg-white/10 flex items-center justify-center"> <ChevronsLeft className="w-4 h-4 text-white "/> </button>
-                          <button className="border border-white/10 rounded-md w-7 h-7 bg-white/10 flex items-center justify-center"> <ChevronLeft className="w-4 h-4 text-white "/> </button>
-                          <button className="border border-white/10 rounded-md w-7 h-7 bg-white/10 flex items-center justify-center"> <ChevronRight className="w-4 h-4 text-white "/> </button>
-                          <button className="border border-white/10 rounded-md w-7 h-7 bg-white/10 flex items-center justify-center"> <ChevronsRight className="w-4 h-4 text-white "/> </button>
+                  <TableCell className="text-right" colSpan={3}>
+                  
+                    <div className="inline-flex gap-8 items-center">
+                        <span>Página {page} de {totalPages}</span>
+                        <div className="flex gap-2">
+                            <IconButton onClick={goToFirstPage} disabled={page === 1}> <ChevronsLeft className="w-4 h-4 text-white "/></IconButton>
+                            <IconButton onClick={goToPreviousPage} disabled={page === 1}> <ChevronLeft className="w-4 h-4 text-white "/></IconButton>
+                            <IconButton onClick={goToNextPage} disabled={page === totalPages}> <ChevronRight className="w-4 h-4 text-white "/></IconButton>
+                            <IconButton onClick={goToLastPage} disabled={page === totalPages}> <ChevronsRight className="w-4 h-4 text-white "/></IconButton>
+
+                        
+                      </div>
+                      
                     </div>
-                    
-                  </div>
                 
-                  </td>
+                  </TableCell>
 
                   
-                </tr>
+                </TableRow>
               </tfoot>
-            </table>
-
-          </div>
+            </Table>
           {/* Fim da Table */}
 
 
