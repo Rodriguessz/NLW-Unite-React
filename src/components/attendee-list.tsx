@@ -5,21 +5,75 @@
   import { Searchinput } from "./search-input"
   import { TableCell } from "./table/table-cell"
   import { TableRow } from "./table/table-row"
-  import { atteends } from "../data/attendees"
   import dayjs from "dayjs"
   import "dayjs/locale/pt-br"
   import relativeTime from "dayjs/plugin/relativeTime"
-import { MouseEventHandler, useState } from "react"
+  import { ChangeEvent, useEffect, useState } from "react"
 
 
   dayjs.extend(relativeTime);
   dayjs.locale("pt-br")
 
-  export function AttendeeList() {
+
+  interface Attendee {
+    id:          string,
+    name:        string,
+    email:       string,
+    createdAt:   string
+    checkedInAt: string | null
+
+
+  }
+    
+
+    function querySearch(event : HTMLInputElement){
+      const [inputValue, setInputValue] = useState("")
+      setInputValue(event.target.value)
+      return inputValue;
+  }
+  
+  export function AttendeeList(event : HTMLInputElement) {
 
       //UseState - Seta um valor default que só poderá ser alterado utilizando o método desestruturado do arrayRetornado do useState()
       const [page, setPage] = useState(1);
-      const totalPages = Math.ceil(atteends.length /10);
+      const [attendees , setAttendees] = useState<Attendee[]>([]);
+      const [total, setTotal] = useState(0);
+      const [totalRows, setTotalRows] = useState(0);
+      const [inputValue, setInputValue] = useState("");
+
+      
+
+      
+
+       //useEffect é uma forma de disparar métodos em react apenas quando determinados estados forem atualizados
+      useEffect(()=> {
+        const url = new URL("http://localhost:3333/events/9e9bd979-9d10-4915-b339-3786b1634f33/attendees")
+        url.searchParams.set('pageIndex', String(page - 1))
+
+        if(inputValue.length > 0){
+        
+            url.searchParams.set('query', inputValue )
+
+        }   
+
+
+        fetch(url)
+          .then(response => response.json())
+          .then(data => {
+            setAttendees(data.attendees)  
+            setTotalRows(data.attendees.length)
+            setTotal(data.total)
+          })
+      } , [page, inputValue])
+      
+
+      const totalPages = Math.ceil(total /10);
+
+
+      function onSearchChange(event : ChangeEvent<HTMLInputElement>){
+        setInputValue(event.target.value)
+        setPage(1)
+      } 
 
       const goToNextPage =  ()=> {
           setPage(page + 1)
@@ -36,6 +90,8 @@ import { MouseEventHandler, useState } from "react"
        const goToFirstPage =  ()=> {
           setPage(1)
       }
+
+
     return (
       <>
         <div className="flex flex-col gap-4">
@@ -43,8 +99,7 @@ import { MouseEventHandler, useState } from "react"
           {/* Header Table */}
           <div className="flex gap-5 items-center">
             <h1 className="text-2xl font-bold">Participantes</h1>
-            <Searchinput  type="text" placeholder="Buscar participante..."/>
-
+            <Searchinput onChange={onSearchChange} type="text" placeholder="Buscar participante..."/>
           </div>
           {/* Fim Header Table */}
 
@@ -65,21 +120,23 @@ import { MouseEventHandler, useState } from "react"
               <tbody>
                 {/* Exibindo itens repetidos sem precisar copiar várias vezes */}
 
-                {atteends.slice((page - 1) * 10, page * 10).map((atteend) => {
+                {attendees.map((attendee) => {
                   return (
-                    <TableRow key={atteend.id} className="hover:bg-white/5">
+                    <TableRow key={attendee.id} className="hover:bg-white/5">
                       <TableCell style={{width: 48}}> 
                           <input type="checkbox" className="size-4 bg-black/20 rounded border-white/10"/>
                       </TableCell>
-                      <TableCell> {atteend.id}</TableCell>
+                      <TableCell> {attendee.id}</TableCell>
                       <TableCell>
                         <div className="flex flex-col gap-1">
-                          <span className="font-semibold text-white">{atteend.nome}</span>
-                          <span>{atteend.email}</span>
+                          <span className="font-semibold text-white">{attendee.name}</span>
+                          <span>{attendee.email}</span>
                         </div>
                         </TableCell>
-                      <TableCell>{dayjs().to(atteend.createdAt)}</TableCell>
-                      <TableCell>{dayjs().to(atteend.createdAt)}</TableCell>
+                      <TableCell>{dayjs().to(attendee.createdAt)}</TableCell>
+                      <TableCell>{attendee.checkedInAt === null 
+                      ? <span>Não fez check-in</span> 
+                      : dayjs().to(attendee.checkedInAt)}</TableCell>
                       <TableCell style={{width: 64}}>
 
                         <IconButton transparent> <MoreHorizontal className="w-4 h-4 text-white "/> </IconButton>
@@ -91,7 +148,7 @@ import { MouseEventHandler, useState } from "react"
 
               <tfoot>
                 <TableRow className="border-none">
-                  <TableCell colSpan={3}>Mostrando 10 de {atteends.length} itens</TableCell>
+                  <TableCell colSpan={3}>Mostrando {totalRows} de {total} itens</TableCell>
 
                   <TableCell className="text-right" colSpan={3}>
                   
