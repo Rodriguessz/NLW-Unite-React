@@ -26,26 +26,30 @@
   }
     
 
-    function querySearch(event : HTMLInputElement){
-      const [inputValue, setInputValue] = useState("")
-      setInputValue(event.target.value)
-      return inputValue;
-  }
-  
-  export function AttendeeList(event : HTMLInputElement) {
+ 
+  export function AttendeeList() {
 
       //UseState - Seta um valor default que só poderá ser alterado utilizando o método desestruturado do arrayRetornado do useState()
-      const [page, setPage] = useState(1);
+      const [page, setPage] = useState(()=>{
+        const url = new URL(window.location.toString())
+        if(url.searchParams.has("page")){
+          return Number(url.searchParams.get("page"))
+        } else{
+          return 1;
+        }
+      });
       const [attendees , setAttendees] = useState<Attendee[]>([]);
       const [total, setTotal] = useState(0);
       const [totalRows, setTotalRows] = useState(0);
-      const [inputValue, setInputValue] = useState("");
-
+      const [inputValue, setInputValue] = useState(()=>{
+        const url = new URL(window.location.toString())
+        if(url.searchParams.has("search")){
+          return String(url.searchParams.get("search"))
+        }
+        return "";
+      });
       
-
-      
-
-       //useEffect é uma forma de disparar métodos em react apenas quando determinados estados forem atualizados
+      //useEffect é uma forma de disparar métodos em react apenas quando determinados estados forem atualizados
       useEffect(()=> {
         const url = new URL("http://localhost:3333/events/9e9bd979-9d10-4915-b339-3786b1634f33/attendees")
         url.searchParams.set('pageIndex', String(page - 1))
@@ -54,8 +58,7 @@
         
             url.searchParams.set('query', inputValue )
 
-        }   
-
+        } 
 
         fetch(url)
           .then(response => response.json())
@@ -69,26 +72,44 @@
 
       const totalPages = Math.ceil(total /10);
 
+    function setCurrentPage(page : number){
+         //Retorna um objeto com todos os searchParams da minha URL
+          const url=  new URL(window.location.toString())
+
+          url.searchParams.set("page" , String(page))
+          window.history.pushState({}, "", url)
+          setPage(page)
+    }
+    
+    function setCurrentSearch(search : string){
+        const url=  new URL(window.location.toString())
+
+        url.searchParams.set("search" , search)
+        window.history.pushState({}, "", url)
+        setInputValue(search)
+    }
 
       function onSearchChange(event : ChangeEvent<HTMLInputElement>){
-        setInputValue(event.target.value)
-        setPage(1)
+
+          setCurrentSearch(event.target.value)
+          setPage(1);
       } 
 
       const goToNextPage =  ()=> {
-          setPage(page + 1)
+          setCurrentPage(page + 1)
+
       }
 
       const goToPreviousPage =  ()=> {
-          setPage(page - 1)
+          setCurrentPage(page - 1)
       }
 
        const goToLastPage =  ()=> {
-          setPage(totalPages)
+          setCurrentPage(totalPages)
       }
 
        const goToFirstPage =  ()=> {
-          setPage(1)
+          setCurrentPage(1)
       }
 
 
