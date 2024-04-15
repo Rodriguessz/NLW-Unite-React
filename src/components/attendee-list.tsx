@@ -120,7 +120,7 @@
           {/* Header Table */}
           <div className="flex gap-5 items-center">
             <h1 className="text-2xl font-bold">Participantes</h1>
-            <Searchinput onChange={onSearchChange} type="text" placeholder="Buscar participante..."/>
+            <Searchinput value={inputValue} onChange={onSearchChange} type="text" placeholder="Buscar participante..."/>
           </div>
           {/* Fim Header Table */}
 
