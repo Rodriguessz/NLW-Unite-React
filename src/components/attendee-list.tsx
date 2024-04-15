@@ -44,7 +44,7 @@
       const [inputValue, setInputValue] = useState(()=>{
         const url = new URL(window.location.toString())
         if(url.searchParams.has("search")){
-          return String(url.searchParams.get("search"))
+          return url.searchParams.get("search") ?? ""
         }
         return "";
       });
